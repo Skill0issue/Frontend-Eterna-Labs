@@ -21,11 +21,6 @@ import {
 import { SolLogo } from "../../../public/svg/solana";
 import { FaBolt } from "react-icons/fa6";
 import { Separator } from "@radix-ui/react-separator";
-import Image from "next/image";
-/**
- * Fallback image: uploaded by you
- * (will be transformed to a served URL by your environment)
- */
 
 type Props = {
   token: Token;
@@ -112,7 +107,6 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
 
   return (
     <div
-      role="row"
       className="flex flex-col border-b mb-2 border-white/5 bg-[#111014] my-1 transition-colors hover:bg-[#0f1113]/30"
     >
       <div
@@ -123,7 +117,7 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
           <div className="relative flex-shrink-0">
             <div className="flex flex-col items-center justify-center ">
               <div className="relative  rounded-md  w-16 h-16 sm:w-14 sm:h-14 lg:w-20 lg:h-20 ring-1 ring-white/6 bg-[#0b0c0d]">
-                <Image
+                <img
                   src={logo}
                   alt={name}
                   className="object-cover w-full h-full "
