@@ -135,6 +135,8 @@ function TokenRow({ token, onBuy, className = "" }: Props) {
                 <img
                   src={logo}
                   alt={name}
+                  fetchPriority="high"
+                  loading="eager"
                   className="object-cover w-full h-full "
                 />
                 {/* green ring indicator bottom-right */}
