@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 import type { Token } from "@/types/token";
 import {
   Clock,
@@ -28,7 +28,7 @@ type Props = {
   className?: string;
 };
 
-export default function TokenRow({ token, onBuy, className = "" }: Props) {
+function TokenRow({ token, onBuy, className = "" }: Props) {
   const {
     name,
     symbol,
@@ -55,6 +55,12 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
       ? `${Math.round((v / Holders) * 100)}%`
       : "0%";
 
+  const IconCrosshair = memo(() => <Crosshair size={12} className="mr-1" />);
+  const IconChefHat = memo(() => <ChefHat size={12} className="mr-1" />);
+  const IconUserStar = memo(() => <UserStar size={12} className="mr-1" />);
+  const IconGhost = memo(() => <Ghost size={12} className="mr-1" />);
+  const IconBoxes = memo(() => <Boxes size={12} className="mr-1" />);
+
   const badgeList = useMemo(
     () => [
       {
@@ -62,35 +68,35 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
         label: "Snipers",
         value: pct(Snipers),
         color: "text-green-400",
-        icon: <Crosshair size={12} className="mr-1" />,
+        icon: <IconCrosshair />,
       },
       {
         key: "dev",
         label: "Dev",
         value: pct(DevHoldings),
         color: "text-green-400",
-        icon: <ChefHat size={12} className="mr-1" />,
+        icon: <IconChefHat />,
       },
       {
         key: "top10",
         label: "Top10",
         value: pct(Top10Holders),
         color: "text-green-400",
-        icon: <UserStar size={12} className="mr-1" />,
+        icon: <IconUserStar />,
       },
       {
         key: "ins",
         label: "Insiders",
         value: pct(Insiders),
         color: "text-white/60",
-        icon: <Ghost size={12} className="mr-1" />,
+        icon: <IconGhost />,
       },
       {
         key: "bundlers",
         label: "Bundlers",
         value: pct(Bundlers),
         color: "text-red-400",
-        icon: <Boxes size={12} className="mr-1" />,
+        icon: <IconBoxes />,
       },
     ],
     [Snipers, DevHoldings, Top10Holders, Insiders, Bundlers, Holders]
@@ -105,10 +111,10 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
     return `$${n}`;
   };
 
+  const pos = Math.max(-20, Math.min(20, change));
+
   return (
-    <div
-      className="flex flex-col border-b mb-2 border-white/5 bg-[#111014] my-1 transition-colors hover:bg-[#0f1113]/30"
-    >
+    <div className="flex flex-col border-b mb-2 border-white/5 bg-[#111014] my-1 transition-colors hover:bg-[#0f1113]/30">
       <div
         className={`relative group w-full flex justify-between items-start gap-4 px-4 py-1  ${className}`}
       >
@@ -327,10 +333,7 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
                           : change > 0
                           ? "#22c55e"
                           : "#ef4444",
-                      transform: `translateX(${Math.max(
-                        -48,
-                        Math.min(48, change)
-                      )}%)`,
+                      transform: `translateX(${pos}px)`,
                       transition: "transform 0.3s",
                     }}
                   />
@@ -380,3 +383,5 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
     </div>
   );
 }
+
+export default React.memo(TokenRow);
