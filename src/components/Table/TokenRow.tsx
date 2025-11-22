@@ -15,9 +15,18 @@ import {
   UserStar,
   Ghost,
 } from "lucide-react";
+
 import { SolLogo } from "../../../public/svg/solana";
 import { FaBolt } from "react-icons/fa6";
 import { Separator } from "@radix-ui/react-separator";
+
+// SHADCN TOOLTIP
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type Props = {
   token: Token;
@@ -25,22 +34,63 @@ type Props = {
   className?: string;
 };
 
-const makeIcon = (
-  Comp: React.ComponentType<React.SVGProps<SVGSVGElement>>,
-  name: string
-) => {
-  const I = memo(() => <Comp width={12} height={12} className="mr-1" />);
+// Memoized small icons
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const makeIcon = (C: React.ComponentType<any>, name: string) => {
+  const I = memo(() => <C width={12} height={12} className="mr-1" />);
   I.displayName = name;
   return I;
 };
 
-const IconCrosshair = makeIcon(Crosshair, "IconCrosshair");
-const IconChefHat = makeIcon(ChefHat, "IconChefHat");
-const IconUserStar = makeIcon(UserStar, "IconUserStar");
-const IconGhost = makeIcon(Ghost, "IconGhost");
-const IconBoxes = makeIcon(Boxes, "IconBoxes");
+const IconTop10 = makeIcon(UserStar, "IconTop10");
+const IconDev = makeIcon(ChefHat, "IconDev");
+const IconSnipers = makeIcon(Crosshair, "IconSnipers");
+const IconInsiders = makeIcon(Ghost, "IconInsiders");
+const IconBundlers = makeIcon(Boxes, "IconBundlers");
 
-function TokenRow({ token, onBuy, className = "" }: Props) {
+// number formatting
+function formatNum(n?: number | null) {
+  if (n == null) return "0";
+  const abs = Math.abs(n);
+  if (abs >= 1e12) return (n / 1e12).toFixed(1) + "T";
+  if (abs >= 1e9) return (n / 1e9).toFixed(1) + "B";
+  if (abs >= 1e6) return (n / 1e6).toFixed(1) + "M";
+  if (abs >= 1e3) return (n / 1e3).toFixed(1) + "K";
+  if (!Number.isInteger(n)) return Number(n).toLocaleString(undefined, { maximumFractionDigits: 6 });
+  return String(n);
+}
+
+// stable badge color logic
+function badgeColor(metric: string, val: number) {
+  switch (metric) {
+    case "Top10Holders":
+      return val >= 40 ? "text-green-400" : "text-red-400";
+    case "DevHoldings":
+      return val >= 10 ? "text-green-400" : "text-red-400";
+    case "Snipers":
+      return val >= 25 ? "text-green-400" : "text-red-400";
+    case "Insiders":
+      return val >= 5 ? "text-green-400" : "text-red-400";
+    case "Bundlers":
+      return val >= 10 ? "text-green-400" : "text-red-400";
+    default:
+      return "text-green-400";
+  }
+}
+
+// SHADCN tooltip wrapper (makes code clean)
+function T({ text, children }: { text: string; children: React.ReactNode }) {
+  return (
+    <TooltipProvider delayDuration={0} skipDelayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>{children}</TooltipTrigger>
+        <TooltipContent>{text}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
   const {
     name,
     symbol,
@@ -55,7 +105,7 @@ function TokenRow({ token, onBuy, className = "" }: Props) {
     Top10Holders,
     Insiders,
     Bundlers,
-    bonding,
+    bonding = 0,
     canBuy,
     copyUrl,
     Twitter,
@@ -63,313 +113,359 @@ function TokenRow({ token, onBuy, className = "" }: Props) {
     volatility,
   } = token;
 
-  // -------------------------------
-  // TRACK PREVIOUS TOKEN STATE
-  // -------------------------------
-  const prevRef = useRef<Token | null>(null);
-  useEffect(() => {
-    prevRef.current = token;
-  }, [token]);
-
-  const prev = prevRef.current;
-
-  // -------------------------------
-  // IMPROVEMENT-BASED COLOR LOGIC
-  // -------------------------------
-  const improvementColor = (current: number, prevValue?: number) => {
-    if (prevValue === undefined) return "text-white/60";
-
-    const diff = current - prevValue;
-    if (diff > 0) return "text-green-400"; // improved
-    if (diff < 0) return "text-red-400";   // worsened
-    return "text-white/60";
-  };
-
-  // -------------------------------
-  // NORMALIZED BADGE VALUES
-  // -------------------------------
-  const normPct = (value: number, maxHint: number) =>
-    Math.min(100, Math.max(0, Math.round((value / maxHint) * 100)));
-
-  const badgeList = [
-    {
-      key: "Snipers",
-      label: "Snipers",
-      value: normPct(Snipers, 50),
-      raw: Snipers,
-      prev: prev?.Snipers,
-      icon: <IconCrosshair />,
-    },
-    {
-      key: "DevHoldings",
-      label: "Dev",
-      value: Math.round(DevHoldings),
-      raw: DevHoldings,
-      prev: prev?.DevHoldings,
-      icon: <IconChefHat />,
-    },
-    {
-      key: "Top10Holders",
-      label: "Top10",
-      value: Math.round(Top10Holders),
-      raw: Top10Holders,
-      prev: prev?.Top10Holders,
-      icon: <IconUserStar />,
-    },
-    {
-      key: "Insiders",
-      label: "Insiders",
-      value: normPct(Insiders, 30),
-      raw: Insiders,
-      prev: prev?.Insiders,
-      icon: <IconGhost />,
-    },
-    {
-      key: "Bundlers",
-      label: "Bundlers",
-      value: normPct(Bundlers, 50),
-      raw: Bundlers,
-      prev: prev?.Bundlers,
-      icon: <IconBoxes />,
-    },
-  ];
-
-  // -------------------------------
-  // FORMATTING
-  // -------------------------------
-  const formatK = (n?: number) => {
-    if (!n) return "$0";
-    if (n >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`;
-    if (n >= 1_000) return `$${(n / 1_000).toFixed(1)}K`;
-    return `$${n}`;
-  };
-
-  const pos = Math.max(-20, Math.min(20, change));
-
-  // -------------------------------
-  // SMOOTH ANIMATED BONDING RING
-  // -------------------------------
-  const [displayBonding, setDisplayBonding] = useState(bonding);
+  // bonding animation
+  const [displayBonding, setDisplayBonding] = useState(
+    Math.max(0, Math.min(100, bonding))
+  );
   const raf = useRef<number | null>(null);
 
   useEffect(() => {
-    const start = performance.now();
     const from = displayBonding;
-    const to = bonding;
-    const duration = 350;
+    const to = Math.max(0, Math.min(100, bonding));
+    const start = performance.now();
+    const dur = 350;
 
-    if (raf.current) {
+    if (raf.current !== null) {
       cancelAnimationFrame(raf.current);
     }
 
-    const animate = (t: number) => {
-      const p = Math.min(1, (t - start) / duration);
-      const ease = 1 - Math.pow(1 - p, 3);
-      setDisplayBonding(from + (to - from) * ease);
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - start) / dur);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplayBonding(from + (to - from) * eased);
 
       if (p < 1) {
-        raf.current = requestAnimationFrame(animate);
+        raf.current = requestAnimationFrame(tick);
       }
     };
 
-    raf.current = requestAnimationFrame(animate);
+    raf.current = requestAnimationFrame(tick);
 
     return () => {
       if (raf.current !== null) {
         cancelAnimationFrame(raf.current);
       }
-    };
+    };  
   }, [bonding]);
 
-  // bonding color: improvement-based, not threshold-based
-  const borderColor = improvementColor(bonding, prev?.bonding).replace("text-", "#").replace("-400", "");
 
-  // -------------------------------
-  // RENDER
-  // -------------------------------
+  // persistent border color
+  const borderHex = bonding >= 50 ? "#22c55e" : "#ef4444";
+
+  // market cap color (blue/yellow)
+  const prevLiqRef = useRef(liquidity);
+  useEffect(() => {
+    prevLiqRef.current = liquidity;
+  }, [liquidity]);
+
+  const mcColor =
+    liquidity >= prevLiqRef.current
+      ? "text-blue-400"
+      : "text-yellow-400";
+
+  const pos = Math.max(-20, Math.min(20, change ?? 0));
+
+  // ordered badges
+  const badges = [
+    {
+      key: "Top10Holders",
+      label: "Top 10 Holders",
+      val: Top10Holders ?? 0,
+      display: (Top10Holders ?? 0).toFixed(1) + "%",
+      icon: <IconTop10 />,
+    },
+    {
+      key: "DevHoldings",
+      label: "Dev Holdings",
+      val: DevHoldings ?? 0,
+      display: (DevHoldings ?? 0).toFixed(1) + "%",
+      icon: <IconDev />,
+    },
+    {
+      key: "Snipers",
+      label: "Snipers",
+      val: Snipers ?? 0,
+      display: String(Snipers ?? 0),
+      icon: <IconSnipers />,
+    },
+    {
+      key: "Insiders",
+      label: "Insiders",
+      val: Insiders ?? 0,
+      display: String(Insiders ?? 0),
+      icon: <IconInsiders />,
+    },
+    {
+      key: "Bundlers",
+      label: "Bundlers",
+      val: Bundlers ?? 0,
+      display: String(Bundlers ?? 0),
+      icon: <IconBundlers />,
+    },
+  ];
+
   return (
     <div className="flex flex-col border-b mb-2 border-white/5 bg-[#111014] my-1 hover:bg-[#0f1113]/30 transition-colors">
-      <div className={`relative group flex justify-between items-start gap-4 px-4 py-1 ${className}`}>
-
-        {/* LEFT SECTION */}
-        <div className="flex gap-4">
-          {/* BONDING BORDER + IMAGE */}
+      <div
+        className={`relative group flex justify-between items-start gap-4 px-4 py-1 overflow-hidden ${className}`}
+      >
+        {/* LEFT */}
+        <div className="flex gap-4 min-w-0">
+          {/* Bonding border + avatar */}
           <div className="relative flex-shrink-0">
-            <div className="relative w-16 h-16 sm:w-14 sm:h-14 lg:w-20 lg:h-20">
-
-              {/* BORDER (Square, Rounded) */}
-              <div
-                className="absolute inset-0 rounded-xl transition-all"
-                style={{
-                  padding: "3px",
-                  background: `conic-gradient(${borderColor} ${displayBonding}%, #222 ${displayBonding}%)`,
-                  WebkitMask:
-                    "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                  WebkitMaskComposite: "xor",
-                  maskComposite: "exclude",
-                }}
-              />
-
-              {/* IMAGE */}
-              <div className="absolute inset-[3px] rounded-xl overflow-hidden bg-[#0b0c0d]">
-                <img src={logo} alt={name} className="object-cover w-full h-full" />
+            <T text={`Bonding: ${Math.round(displayBonding)}%`}>
+              <div className="relative w-16 h-16 sm:w-14 sm:h-14 lg:w-20 lg:h-20">
+                <div
+                  className="absolute inset-0 rounded-xl"
+                  style={{
+                    padding: "3px",
+                    background: `conic-gradient(${borderHex} ${displayBonding}%, rgba(0,0,0,0.6) ${displayBonding}%)`,
+                    WebkitMask:
+                      "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude",
+                    boxShadow: `0 0 8px ${borderHex}66`,
+                  }}
+                />
+                <div className="absolute inset-[3px] rounded-xl overflow-hidden bg-[#0b0c0d]">
+                  <img
+                    src={logo}
+                    alt={name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
               </div>
-            </div>
+            </T>
 
-            {/* online dot */}
-            <span className="absolute w-3 h-3 bg-green-500 rounded-full bottom-7 -right-1 ring-2 ring-black" />
+            <span className="absolute w-3 h-3 bg-green-500 rounded-full bottom-1 -right-1 ring-2 ring-black" />
           </div>
 
-          {/* MAIN CONTENT */}
-          <div className="flex flex-col">
-            {/* Name / Symbol */}
-            <div className="flex-1">
+          {/* INFO */}
+          <div className="flex flex-col min-w-0">
+            {/* title */}
+            <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div className="min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="text-base font-semibold text-white truncate sm:text-sm lg:text-lg">
-                      {name}{" "}
-                      <span className="ml-1 text-[13px] text-white/60 font-normal">{symbol}</span>
-                    </h3>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <T text={`${name} • ${symbol}`}>
+                      <h3 className="text-base font-semibold text-white truncate max-w-[12rem] sm:text-sm lg:text-lg">
+                        {name}{" "}
+                        <span className="ml-1 text-[13px] text-white/60 font-normal">
+                          {symbol}
+                        </span>
+                      </h3>
+                    </T>
 
-                    <button
-                      title="Copy"
-                      className="ml-2 opacity-70 hover:opacity-100"
-                      onClick={() => copyUrl && navigator.clipboard.writeText(copyUrl)}
-                    >
-                      <Copy size={14} />
-                    </button>
+                    <T text="Copy contract">
+                      <button
+                        className="ml-2 opacity-70 hover:opacity-100"
+                        onClick={() =>
+                          copyUrl && navigator.clipboard.writeText(copyUrl)
+                        }
+                      >
+                        <Copy size={14} />
+                      </button>
+                    </T>
                   </div>
 
-                  {/* Line 2 */}
+                  {/* SECOND ROW */}
                   <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-white/70">
-                    <span className="flex items-center gap-1">
-                      <Clock size={12} />
-                      <span>{lastOnline}s</span>
-                    </span>
+                    <T text={`Last seen ${lastOnline}s ago`}>
+                      <span className="flex items-center gap-1">
+                        <Clock size={12} />
+                        <span>{lastOnline}s</span>
+                      </span>
+                    </T>
 
-                    {[Feather, Search, Link].map((Icon, i) => (
+                    <T text="Open Twitter">
                       <button
-                        key={i}
                         className="opacity-80 hover:opacity-100"
-                        onClick={() => Twitter && window.open(Twitter, "_blank")}
+                        onClick={() =>
+                          Twitter && window.open(Twitter, "_blank")
+                        }
                       >
-                        <Icon size={12} />
+                        <Feather size={12} />
                       </button>
-                    ))}
+                    </T>
 
-                    <span className="flex items-center gap-1">
-                      <Users size={12} />
-                      <span>{Math.floor(Holders / 10000)}</span>
-                    </span>
+                    <T text="Search Twitter">
+                      <button
+                        className="opacity-80 hover:opacity-100"
+                        onClick={() =>
+                          Twitter && window.open(Twitter, "_blank")
+                        }
+                      >
+                        <Search size={12} />
+                      </button>
+                    </T>
 
-                    <span className="flex items-center gap-1">
-                      <span className="opacity-80">B</span>
-                      <span>{Math.floor(Buyers / 100)}</span>
-                    </span>
+                    <T text="Open link">
+                      <button
+                        className="opacity-80 hover:opacity-100"
+                        onClick={() =>
+                          Twitter && window.open(Twitter, "_blank")
+                        }
+                      >
+                        <Link size={12} />
+                      </button>
+                    </T>
+
+                    <T text={`Holders: ${formatNum(Holders)}`}>
+                      <span className="flex items-center gap-1 min-w-0">
+                        <Users size={12} />
+                        <span className="truncate max-w-[5rem]">
+                          {formatNum(Holders)}
+                        </span>
+                      </span>
+                    </T>
+
+                    <T text={`Buyers: ${formatNum(Buyers)}`}>
+                      <span className="flex items-center gap-1 min-w-0">
+                        <span className="opacity-80">B</span>
+                        <span className="truncate max-w-[4rem]">
+                          {formatNum(Buyers)}
+                        </span>
+                      </span>
+                    </T>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* BADGES */}
-            <div className="hidden 2xl:flex flex-wrap items-center gap-1 mt-3">
-              {badgeList.map((b) => {
-                const color = improvementColor(b.raw, b.prev);
-                return (
+            {/* BADGES (desktop) */}
+            <div className="hidden 2xl:flex flex-wrap items-center gap-1 mt-3 overflow-hidden">
+              {badges.map((b) => (
+                <T key={b.key} text={b.label}>
                   <div
-                    key={b.key}
-                    className={`inline-flex items-center gap-2 px-2 py-1 rounded-full bg-black/50 text-[10px] font-medium ${color}`}
+                    className={`inline-flex items-center gap-2 px-2 py-1 rounded-full bg-black/50 text-[10px] font-medium ${badgeColor(
+                      b.key,
+                      b.val
+                    )}`}
                   >
                     {b.icon}
-                    {b.value}%
+                    <span className="truncate max-w-[5rem]">{b.display}</span>
                   </div>
-                );
-              })}
+                </T>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* RIGHT SECTION */}
-        <div className="flex flex-col items-end justify-between flex-shrink-0 gap-3">
-          {/* MC + Volume */}
-          <div className="flex flex-col items-center gap-1 mt-3 sm:mt-0">
-            <div className="text-right">
-              <div className="text-[13px] flex text-white/60 font-semibold lg:text-[16px]">
-                MC <span className="ml-1 text-primaryBlue">{formatK(liquidity)}</span>
+        {/* RIGHT */}
+        <div className="flex flex-col items-end justify-between flex-shrink-0 gap-3 min-w-0">
+          {/* Market / Volume */}
+          <div className="flex flex-col justify-end items-end gap-1 mt-3 sm:mt-0">
+            <div className="text-right flex flex-col items-end justify-end">
+              {/* MC */}
+              <div className="text-[13px] flex items-end text-white/60 font-semibold lg:text-[16px] min-w-0">
+                <T text={`Market cap (liquidity): ${formatNum(liquidity)}`}>
+                  <span className="flex items-center gap-1 truncate max-w-[7rem] text-sm">
+                    MC{" "}
+                    <span className={`${mcColor} text-lg`}>
+                      ${formatNum(liquidity)}
+                    </span>
+                  </span>
+                </T>
               </div>
-              <div className="text-white/60">v <span className="text-white">{formatK(Volume)}</span></div>
+
+              {/* Volume */}
+              <div className="text-white/60 min-w-0 flex items-end">
+                <T text={`Volume: ${formatNum(Volume)}`}>
+                  <span className="flex items-right justify-center gap-1 truncate max-w-[7rem]">
+                    v <span className="text-white">${formatNum(Volume)}</span>
+                  </span>
+                </T>
+              </div>
             </div>
 
-            {/* Treemap Bar */}
-            <div className="hidden sm:flex flex-row gap-1 text-right text-[12px] text-white/60">
-              <div className="flex gap-0.5 items-center">
-                F <SolLogo width={12} />
-                <span className="text-white/90">{(volatility ?? 0).toFixed(2)}</span>
-              </div>
+            {/* volatility + tx + change bar */}
+            <div className="hidden sm:flex flex-row gap-1 items-center justify-center text-right text-[12px] text-white/60">
+              <T text={`Volatility: ${(volatility ?? 0).toFixed(3)}`}>
+                <div className="flex gap-0.5 items-center">
+                  F <SolLogo width={12} />
+                  <span className="text-white/90">
+                    {(volatility ?? 0).toFixed(3)}
+                  </span>
+                </div>
+              </T>
 
-              <div className="flex flex-row">
-                TX {Math.max(1, Math.floor(Volume / 100000))}
-              </div>
+              <T
+                text={`Estimated TX: ${Math.max(
+                  1,
+                  Math.floor(Volume / 100000)
+                )}`}
+              >
+                <div className="flex flex-row">
+                  TX {Math.max(1, Math.floor(Volume / 100000))}
+                </div>
+              </T>
 
-              <div className="w-8 text-right">
-                <div className="relative flex items-center w-full h-0.5 mt-2 rounded-full bg-white/10">
-                  <div className="absolute left-0 w-1/2 h-full bg-green-400" />
-                  <div className="absolute right-0 w-1/2 h-full bg-red-400" />
+              {/* change bar */}
+              <div className="w-8 text-right flex items-center justify-center">
+                <div className="relative flex justify-center items-center w-full h-0.5 rounded-full bg-white/10">
+                  <div className="absolute top-0 left-0 w-1/2 h-full bg-green-400 rounded-l-full" />
+                  <div className="absolute top-0 right-0 w-1/2 h-full bg-red-400 rounded-r-full" />
 
                   <div
-                    className="absolute h-full"
+                    className="absolute inset-0 h-full rounded-full"
                     style={{
                       left: "50%",
                       width: 2,
-                      background: change > 0 ? "#22c55e" : change < 0 ? "#ef4444" : "#fff",
+                      background:
+                        change > 0
+                          ? "#22c55e"
+                          : change < 0
+                            ? "#ef4444"
+                            : "#fff",
                       transform: `translateX(${pos}px)`,
-                      transition: "transform .25s",
+                      transition: "transform 0.25s",
                     }}
                   />
-
-                  <div className="absolute left-1/2 w-0.5 h-full bg-white/30 -translate-x-1/2" />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Buy Button */}
+          {/* BUY BUTTON */}
           <div className="hidden 2xl:flex">
-            <button
-              disabled={!canBuy}
-              onClick={() => onBuy?.(token)}
-              className={`inline-flex items-center gap-2 px-2 py-1 rounded-full shadow-sm transition
-                ${canBuy ? "bg-purple text-white hover:brightness-110" : "bg-white/6 text-white/60 cursor-not-allowed"}
-              `}
-            >
-              <FaBolt size={14} color="black" />
-              <span className="hidden sm:inline text-sm font-semibold">0 SOL</span>
-              <span className="sm:hidden text-sm">Buy</span>
-            </button>
+            <T text={canBuy ? "Buy token" : "Cannot buy"}>
+              <button
+                disabled={!canBuy}
+                onClick={() => onBuy?.(token)}
+                className={`inline-flex items-center gap-2 px-2 py-1 rounded-full shadow-sm transition ${canBuy
+                    ? "bg-purple text-white hover:brightness-110"
+                    : "bg-white/6 text-white/60 cursor-not-allowed"
+                  }`}
+              >
+                <FaBolt size={14} color="black" />
+                <span className="hidden sm:inline text-sm font-semibold">
+                  0 SOL
+                </span>
+                <span className="sm:hidden text-sm">Buy</span>
+              </button>
+            </T>
           </div>
         </div>
       </div>
 
       {/* MOBILE BADGES */}
-      <div className="flex items-center gap-3 mb-2 ml-4 2xl:hidden">
-        {badgeList.map((b) => {
-          const color = improvementColor(b.raw, b.prev);
-          return (
+      <div className="flex items-center gap-3 mb-2 ml-4 2xl:hidden overflow-hidden">
+        {badges.map((b) => (
+          <T key={b.key} text={b.label}>
             <div
-              key={b.key}
-              className={`inline-flex items-center gap-2 px-2 py-1 rounded-full bg-black/50 text-[10px] font-medium ${color}`}
+              className={`inline-flex items-center gap-2 px-2 py-1 rounded-full bg-black/50 text-[10px] font-medium ${badgeColor(
+                b.key,
+                b.val
+              )}`}
             >
               {b.icon}
-              {b.value}%
+              <span className="truncate max-w-[5rem]">{b.display}</span>
             </div>
-          );
-        })}
+          </T>
+        ))}
       </div>
 
       <Separator dir="horizontal" />
     </div>
   );
-}
-
-export default React.memo(TokenRow);
+});
