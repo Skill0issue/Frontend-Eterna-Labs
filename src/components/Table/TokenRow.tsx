@@ -1,6 +1,3 @@
-// TokenRow.tsx
-// Uploaded image path (use this as URL in your tooling): /mnt/data/48a9fb5f-d6a8-485d-9145-be5dd658972c.png
-
 "use client";
 
 import React, { memo, useEffect, useRef, useState, useMemo } from "react";
@@ -18,7 +15,6 @@ import {
   Ghost,
 } from "lucide-react";
 import { FaBolt } from "react-icons/fa6";
-// shadcn tooltip pieces (Section provides TooltipProvider)
 import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { SolLogo } from "../../../public/svg/solana";
 
@@ -28,7 +24,7 @@ type Props = {
   className?: string;
 };
 
-// memoized small icon factory
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const makeIcon = (C: any, name: string) => {
   const I = memo(() => <C width={12} height={12} className="mr-1" />);
   I.displayName = name;
@@ -106,7 +102,6 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
     Buyers,
   } = token;
 
-  // smooth bonding animation using rAF (no forced layout queries)
   const [displayBonding, setDisplayBonding] = useState<number>(() => Math.max(0, Math.min(100, bonding)));
   const rafRef = useRef<number | null>(null);
 
@@ -116,7 +111,7 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
     const to = Math.max(0, Math.min(100, bonding));
     const duration = 350;
 
-    // cancel previous
+
     if (rafRef.current !== null) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
@@ -125,7 +120,6 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
     const step = (t: number) => {
       const p = Math.min(1, (t - start) / duration);
       const eased = 1 - Math.pow(1 - p, 3);
-      // set state with numeric interpolation (no layout reads here)
       setDisplayBonding(from + (to - from) * eased);
       if (p < 1) {
         rafRef.current = requestAnimationFrame(step);
@@ -136,15 +130,12 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
 
     rafRef.current = requestAnimationFrame(step);
 
-    // explicit void-returning cleanup (fixes TS EffectCallback type issue)
     return () => {
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
         rafRef.current = null;
       }
     };
-    // intentionally exclude displayBonding to avoid restarting mid-animation
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [bonding]);
 
   // border hex stable, computed once per render
@@ -159,8 +150,6 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
 
   // clamp change indicator position
   const pos = useMemo(() => Math.max(-20, Math.min(20, change ?? 0)), [change]);
-
-  // badges memoized to avoid reallocation every render
   const badges = useMemo(
     () => [
       {
@@ -202,7 +191,6 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
     [Top10Holders, DevHoldings, Snipers, Insiders, Bundlers]
   );
 
-  // precompute border style object once per render (cheap)
   const borderStyle = useMemo(
     () => ({
       padding: "3px",
@@ -216,7 +204,6 @@ export default memo(function TokenRow({ token, onBuy, className = "" }: Props) {
     [borderHex, displayBonding]
   );
 
-  /* ---------------------- RENDER (DOM kept consistent) ---------------------- */
   return (
     <div className="flex flex-col border-b font-inter tracking-tight mb-2 border-white/5 bg-[#111014] hover:bg-[#0f1113]/30 transition-colors">
       <div className={`flex group relative justify-between items-start gap-4 px-4 py-1 my-1 ${className}`}>
