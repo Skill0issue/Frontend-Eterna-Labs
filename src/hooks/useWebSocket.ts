@@ -3,12 +3,12 @@ import { useQueryClient } from "@tanstack/react-query";
 import { tickSparkline } from "@/utils/generateToken";
 import type { Token } from "@/types/token";
 
-export function useWebSocket(interval = 900) {
+export function useWebSocket(interval = 900,tab:string) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
     const timer = setInterval(() => {
-      queryClient.setQueryData(["tokens"], (prev: Token[] | undefined) => {
+      queryClient.setQueryData(["tokens",tab], (prev: Token[] | undefined) => {
         if (!prev) return prev;
 
         return prev.map((token) => {

@@ -80,8 +80,8 @@ export function generateToken(): Token {
   };
 }
 
-export function generateTokenList(count:number):Token[]{
-    return Array.from({length:count},generateToken);
+export async function generateTokenList(count:number):Promise<Token[]>{
+    return Array.from({length:count},()=>generateToken());
 }
 
 export function tickSparkline(spark: number[]) {

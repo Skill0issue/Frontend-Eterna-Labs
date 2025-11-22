@@ -6,9 +6,9 @@ type Props = {
   token: Token;
 };
 
-const tableRow = (props: Props) => {
+const TokenRow = (props: Props) => {
   return (
-    <tr className="group hover:bg-hover bg-secondary transistion-all">
+    <tr className="bg-transparent group hover:bg-hover transistion-all">
       <td id="profile"></td>
       <td id="Market Cap"></td>
       <td id="Liquidity"></td>
@@ -22,4 +22,4 @@ const tableRow = (props: Props) => {
   );
 };
 
-export default tableRow;
+export default TokenRow;
