@@ -28,6 +28,21 @@ type Props = {
   className?: string;
 };
 
+const makeIcon = (
+  Comp: React.ComponentType<React.SVGProps<SVGSVGElement>>,
+  name: string
+) => {
+  const I = memo(() => <Comp width={12} height={12} className="mr-1" />);
+  I.displayName = name;
+  return I;
+};
+
+const IconCrosshair = makeIcon(Crosshair, "IconCrosshair");
+const IconChefHat = makeIcon(ChefHat, "IconChefHat");
+const IconUserStar = makeIcon(UserStar, "IconUserStar");
+const IconGhost = makeIcon(Ghost, "IconGhost");
+const IconBoxes = makeIcon(Boxes, "IconBoxes");
+
 function TokenRow({ token, onBuy, className = "" }: Props) {
   const {
     name,
@@ -54,12 +69,6 @@ function TokenRow({ token, onBuy, className = "" }: Props) {
     Holders && v !== undefined && Holders > 0
       ? `${Math.round((v / Holders) * 100)}%`
       : "0%";
-
-  const IconCrosshair = memo(() => <Crosshair size={12} className="mr-1" />);
-  const IconChefHat = memo(() => <ChefHat size={12} className="mr-1" />);
-  const IconUserStar = memo(() => <UserStar size={12} className="mr-1" />);
-  const IconGhost = memo(() => <Ghost size={12} className="mr-1" />);
-  const IconBoxes = memo(() => <Boxes size={12} className="mr-1" />);
 
   const badgeList = useMemo(
     () => [
