@@ -28,7 +28,10 @@ const config: Config = {
           hover: "var(--bg-hover)",
           blue: {
             DEFAULT: "var(--blue)",
-            hover: "var(--blue-hover)",
+            bg: "var(--blue-bg)",
+          },
+          purple:{
+            DEFAULT:"var(--purple)",
           },
           green: {
             "2": "var(--green-2)",
@@ -40,7 +43,7 @@ const config: Config = {
           },
           border: "hsl(var(--border))",
           input: "hsl(var(--input))",
-          purple: "var(--purple)",
+          cyan: "var(--cyan)",
           orange: "var(--orange)",
           primaryBlue: "rgb(var(--primary-blue) / <alpha-value>)",
           background: "hsl(var(--background))",

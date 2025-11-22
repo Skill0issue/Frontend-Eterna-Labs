@@ -1,32 +1,38 @@
+"use client";
+
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { tickSparkline } from "@/utils/generateToken";
-import type { Token } from "@/types/token";
 
-export function useWebSocket(interval = 900,tab:string) {
+export function useWebSocket() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      queryClient.setQueryData(["tokens",tab], (prev: Token[] | undefined) => {
-        if (!prev) return prev;
+    const interval = setInterval(() => {
+      const tabs = ["New pairs", "Final Stretch", "Migrated"];
 
-        return prev.map((token) => {
-          // Smooth price movement
-          const updatedChart = tickSparkline([...token.ChartData]);
-          const first = updatedChart[0];
-          const last = updatedChart[updatedChart.length - 1];
+      tabs.forEach((tab) => {
+        const key = ["tokens", tab];
+        const list = queryClient.getQueryData<any[]>(key);
+
+        if (!list) return;
+
+        // Update ALL tokens
+        const updated = list.map((token) => {
+          const nextPrice =
+            token.CurrentPrice * (1 + (Math.random() - 0.5) * 0.02); // ±2% change
 
           return {
             ...token,
-            ChartData: updatedChart,
-            CurrentPrice: Number(last.toFixed(4)),
-            change: Number((((last - first) / first) * 100).toFixed(2)),
+            CurrentPrice: Number(nextPrice.toFixed(4)),
+            change: Number(((Math.random() - 0.5) * 8).toFixed(2)), // random -4% to +4%
+            ChartData: [...token.ChartData.slice(1), nextPrice],
           };
         });
-      });
-    }, interval);
 
-    return () => clearInterval(timer);
-  }, [queryClient, interval]);
+        queryClient.setQueryData(key, updated);
+      });
+    }, 900);
+
+    return () => clearInterval(interval);
+  }, [queryClient]);
 }

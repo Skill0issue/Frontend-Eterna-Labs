@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body
-        className={`${inter.variable} bg-primary text-1 h-full antialiased overflow-hidden`}
+        className={`${inter.variable} bg-[#0b0c10] text-1 h-full font-inter antialiased overflow-hidden`}
       >
         <Providers>
           {/* NAVBAR  */}
@@ -39,7 +39,7 @@ export default function RootLayout({
               overflow-x-hidden
 
               /* Mobile navbar/footer sizes */
-              top-[60px] bottom-[50px]
+              top-[50px] bottom-[50px]
 
               /* Tablet > */
               sm:top-[70px] sm:bottom-[55px]
@@ -48,7 +48,7 @@ export default function RootLayout({
               lg:top-[80px] lg:bottom-[60px]
 
               /* XL > */
-              xl:top-[90px] xl:bottom-[65px]
+              xl:top-[90px] xl:bottom-[25px]
             "
           >
             {children}

@@ -5,9 +5,9 @@
 @layer base {
   :root {
     /* Background Colors */
-    --bg-primary: #06070b;
+    --bg-primary: #0b0c10;
     --bg-card: #101114;
-    --bg-secondary: #17191d;
+    --bg-secondary: #111014;
     --bg-hover: #1c1e23;
 
     /* Text Colors */
@@ -16,27 +16,28 @@
     --text-3: #5a5d66;
 
     /* Brand Colors */
-    --blue: #3b82f6;
-    --blue-hover: #2563eb;
+    --blue: #526FFF;
+    --blue-bg: #141C3D;
 
-    --green: #2ecc71;
+    --green: #11C179;
     --green-2: #00c48c;
 
-    --red: #e74c3c;
+    --red: #F35561;
     --red-2: #ff5a5a;
 
     --primary-blue: 82 111 255; 
 
     /* Borders */
-    --border-1: #2a2c31;
+    --border-1: #22252C;
     --border-2: #202227;
 
     /* Inputs */
     --input: 0 0% 89.8%;
 
     /* Misc */
-    --purple: #8a7cff;
-    --orange: #ffb14a;
+    --cyan: #497592;
+    --purple : #526FFF;
+    --orange: #F6931B;
 
     /* Border Radii (your newly added ones) */
     --radius-sm: 0.125rem;
