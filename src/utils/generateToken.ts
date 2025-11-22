@@ -68,7 +68,7 @@ export function generateToken(): Token {
 
     Top10Holders: random.float(10, 90),
     DevHoldings: random.float(0.1, 20),
-    Snipers: random.int(0, 50),
+    Snipers: random.int(20, 50),
     Insiders: random.int(0, 30),
     Bundlers: random.int(0, 50),
     DexPaid: random.bool(0.3) ? "Paid" : "Unpaid",

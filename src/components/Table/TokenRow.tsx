@@ -65,10 +65,10 @@ function TokenRow({ token, onBuy, className = "" }: Props) {
   } = token;
 
   // badges: convert raw counts -> percentage of holders (B)
-  const pct = (v?: number) =>
-    Holders && v !== undefined && Holders > 0
-      ? `${Math.round((v / Holders) * 100)}%`
-      : "0%";
+const pct = (v?: number) =>
+  v !== undefined
+    ? `${Math.round((v / 300) * 100)}%` // assume 0–200 max
+    : "0%";
 
   const badgeList = useMemo(
     () => [
