@@ -26,7 +26,6 @@ import Image from "next/image";
  * Fallback image: uploaded by you
  * (will be transformed to a served URL by your environment)
  */
-const FALLBACK_IMG = "/mnt/data/Screenshot From 2025-11-22 19-46-06.png";
 
 type Props = {
   token: Token;
@@ -125,12 +124,9 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
             <div className="flex flex-col items-center justify-center ">
               <div className="relative  rounded-md  w-16 h-16 sm:w-14 sm:h-14 lg:w-20 lg:h-20 ring-1 ring-white/6 bg-[#0b0c0d]">
                 <Image
-                  src={logo ?? FALLBACK_IMG}
+                  src={logo}
                   alt={name}
                   className="object-cover w-full h-full "
-                  onError={(e) =>
-                    ((e.target as HTMLImageElement).src = FALLBACK_IMG)
-                  }
                 />
                 {/* green ring indicator bottom-right */}
                 <span className="absolute z-50 w-3 h-3 bg-green-500 rounded-full -bottom-1 -right-1 ring-2 ring-black" />

@@ -20,14 +20,13 @@ export function useWebSocket() {
         // Update ALL tokens
         const updated = list.map((token) => {
           const nextPrice =
-            token.CurrentPrice * (1 + (Math.random() - 0.5) * 0.02); // ±2% change
+            token.CurrentPrice * (1 + (Math.random() - 0.5) * 0.02);
 
-          return {
-            ...token,
-            CurrentPrice: Number(nextPrice.toFixed(4)),
-            change: Number(((Math.random() - 0.5) * 8).toFixed(2)), // random -4% to +4%
-            ChartData: [...token.ChartData.slice(1), nextPrice],
-          };
+          token.CurrentPrice = Number(nextPrice.toFixed(4));
+          token.change = Number(((Math.random() - 0.5) * 8).toFixed(2));
+          token.ChartData = [...token.ChartData.slice(1), nextPrice];
+
+          return token;
         });
 
         queryClient.setQueryData(key, updated);
