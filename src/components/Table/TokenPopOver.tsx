@@ -1,14 +1,7 @@
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { MoreHorizontal } from "lucide-react";
-import type {Token} from '@/types/token'
 
-
-type TokenPopoverProps = {
-    token : Token
-}
-
-
-export function TokenPopover(props: TokenPopoverProps) {
+export function TokenPopover() {
   return (
     <Popover>
       <PopoverTrigger asChild>

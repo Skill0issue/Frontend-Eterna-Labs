@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { Token } from "@/types/token";
 
 export function useWebSocket() {
   const queryClient = useQueryClient();
@@ -12,7 +13,7 @@ export function useWebSocket() {
 
       tabs.forEach((tab) => {
         const key = ["tokens", tab];
-        const list = queryClient.getQueryData<any[]>(key);
+        const list = queryClient.getQueryData<Token[]>(key);
 
         if (!list) return;
 

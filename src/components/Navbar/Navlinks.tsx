@@ -1,9 +1,8 @@
 import Link from "next/link";
 import React from "react";
 
-type Props = {};
 
-const Navlinks = (props: Props) => {
+const Navlinks = () => {
   const links = [
     { name: "Discover", href: "/Discover" },
     { name: "Pulse", href: "/Pulse" },

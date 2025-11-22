@@ -5,8 +5,6 @@ import { useTokens } from "@/queries/tokens";
 import Section from "@/components/Table/Section";
 import MainHeader from "./MainHeader";
 
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
 const TokenTable = () => {
   const { data: newPairs, isLoading: isPairsLoading } = useTokens("New pairs");
   const { data: finalStretch, isLoading: isFinalLoading } =

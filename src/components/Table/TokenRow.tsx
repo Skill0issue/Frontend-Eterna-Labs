@@ -21,7 +21,7 @@ import {
 import { SolLogo } from "../../../public/svg/solana";
 import { FaBolt } from "react-icons/fa6";
 import { Separator } from "@radix-ui/react-separator";
-
+import Image from "next/image";
 /**
  * Fallback image: uploaded by you
  * (will be transformed to a served URL by your environment)
@@ -41,11 +41,9 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
     logo,
     lastOnline,
     Holders,
-    CurrentPrice,
     change,
     liquidity,
     Volume,
-    ChartData,
     Snipers,
     DevHoldings,
     Top10Holders,
@@ -55,7 +53,6 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
     copyUrl,
     Twitter,
     Buyers,
-    Sellers,
   } = token;
 
   // badges: convert raw counts -> percentage of holders (B)
@@ -114,12 +111,6 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
     return `$${n}`;
   };
 
-  const shortContract = (u?: string) => {
-    if (!u) return "";
-    if (u.length <= 10) return u;
-    return u.slice(0, 4) + "…" + u.slice(-4);
-  };
-
   return (
     <div
       role="row"
@@ -133,7 +124,7 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
           <div className="relative flex-shrink-0">
             <div className="flex flex-col items-center justify-center ">
               <div className="relative  rounded-md  w-16 h-16 sm:w-14 sm:h-14 lg:w-20 lg:h-20 ring-1 ring-white/6 bg-[#0b0c0d]">
-                <img
+                <Image
                   src={logo ?? FALLBACK_IMG}
                   alt={name}
                   className="object-cover w-full h-full "
@@ -398,14 +389,4 @@ export default function TokenRow({ token, onBuy, className = "" }: Props) {
       <Separator dir="horizontal" />
     </div>
   );
-}
-
-/* ---------------- helpers ---------------- */
-
-function formatK(n?: number) {
-  if (n === undefined || n === null) return "$0";
-  const num = Number(n);
-  if (Math.abs(num) >= 1_000_000) return `$${(num / 1_000_000).toFixed(1)}M`;
-  if (Math.abs(num) >= 1_000) return `$${(num / 1_000).toFixed(1)}K`;
-  return `$${num}`;
 }

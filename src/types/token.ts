@@ -30,7 +30,6 @@ export type Token = {
     // Market Data
     liquidity: number,
     Volume: number,
-    bonding:number,
     
     // TXNS
     Holders: number,
