@@ -21,6 +21,7 @@ export type Token = {
     length: number,
     start: number,
     volatility : number,
+    bonding: number;
 
     // statistics
     CurrentPrice: number,
